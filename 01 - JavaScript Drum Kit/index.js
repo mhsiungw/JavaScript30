@@ -1,29 +1,23 @@
 class Drum {
     constructor() {
-        this.setClickListener()
-        this.setKeydownListener()
+        this.setListener('click', this.play)
+        this.setListener('keydown', this.play)
         this.setTransitional()
     }
 
-    setClickListener() {
-        document.querySelector('.keys').addEventListener('click', (e) => {
-            const keyEl = e.target.closest('.key')
+    setListener(event, handler) {
+        document.addEventListener(event, (e) => {
+            let keyEl
+            if (event === 'click') {
+                keyEl = e.target.closest('.key')
+            }
+            if (event === 'keydown') {
+                keyEl = Array.from(document.querySelectorAll('kbd'))
+                    .find((k) => e.key.toUpperCase() == k.innerText.toUpperCase())
+                    ?.closest('.key')
+            }
             if (!keyEl) return
-            const { key } = keyEl.dataset
-            this.play(key)
-        })
-    }
-
-    setKeydownListener() {
-        document.addEventListener('keydown', (e) => {
-            const keyEl = Array.from(document.querySelectorAll('kbd'))
-                .find((k) => k.innerText.toUpperCase() === e.key.toUpperCase())
-                ?.closest('.key')
-
-            if (!keyEl) return
-            keyEl.classList.add('playing')
-            const { key } = keyEl.dataset
-            this.play(key)
+            handler(keyEl)
         })
     }
 
@@ -34,7 +28,9 @@ class Drum {
         })
     }
 
-    play(key) {
+    play(keyEl) {
+        keyEl.classList.add('playing')
+        const { key } = keyEl.dataset
         let audio = document.querySelector(`audio[data-key='${key}']`)
         audio.currentTime = 0
         audio.play()
